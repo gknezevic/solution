@@ -1,6 +1,6 @@
 """This module is main module for contestant's solution."""
 from hackathon.solution.bess import preventBessOverload
-from hackathon.solution.regularScenarios import handleRegularScenarios
+from hackathon.solution.regularScenarios import handleRegularScenarios, shutdownLoadIfPowerIsExpensive
 from hackathon.solution.statuses import saveReceivedStatus, saveSentStatus
 from hackathon.utils.control import Control
 from hackathon.utils.utils import ResultsMessage, DataMessage, PVMode, \
@@ -10,6 +10,8 @@ import sys
 
 listOfReceivedStatuses = []
 listOfSentStatuses = []
+
+powerCost = []
 
 def worker(msg: DataMessage) -> ResultsMessage:
     """TODO: This function should be implemented by contestants."""
@@ -28,6 +30,8 @@ def worker(msg: DataMessage) -> ResultsMessage:
         preventBessOverload(listOfReceivedStatuses[0], defaultOutputStatus, newOutput)
     else:
         handleRegularScenarios(listOfReceivedStatuses[0], defaultOutputStatus, newOutput)
+
+    shutdownLoadIfPowerIsExpensive(listOfReceivedStatuses[0], newOutput)
 
     saveSentStatus(newOutput, listOfSentStatuses)
 

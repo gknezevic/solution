@@ -33,3 +33,8 @@ def handleRegularScenarios(currentInput:DataMessage, previousOutput:ResultsMessa
                     newOutput.power_reference = 0.0
 
 
+def shutdownLoadIfPowerIsExpensive(currentInput:DataMessage, newOutput: ResultsMessage):
+    if currentInput.buying_price * currentInput.current_load * 0.3/60 > 0.1:
+        newOutput.load_three = False
+    if currentInput.buying_price * currentInput.current_load * 0.5/60 > 0.4:
+        newOutput.load_two = False
