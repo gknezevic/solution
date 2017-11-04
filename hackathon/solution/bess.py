@@ -21,14 +21,14 @@ def preventBessOverload(currentInput:DataMessage, previousOutput:ResultsMessage,
         if currentInput.grid_status == False:
             turn_off_loads(newOutput)
             newOutput.power_reference = 0.0
-            availablePower = currentInput.solar_production
+            availablePower = currentInput.solar_production * (-1.0)
             if currentInput.solar_production >= currentInput.current_load * 0.2:
                 newOutput.load_one = True
                 availablePower = currentInput.solar_production - currentInput.current_load * 0.2
             if currentInput.solar_production >= currentInput.current_load * 0.7:
                 newOutput.load_two = True
                 availablePower = currentInput.solar_production - currentInput.current_load * 0.7
-            newOutput.power_reference = availablePower * (0.0)
+            newOutput.power_reference = availablePower * (-1.0)
         else:
             turn_off_loads(newOutput)
             newOutput.power_reference = 0.0
@@ -42,12 +42,12 @@ def preventBessOverload(currentInput:DataMessage, previousOutput:ResultsMessage,
             if currentInput.solar_production >= currentInput.current_load:
                 newOutput.load_three = True
                 availablePower = currentInput.solar_production - currentInput.current_load
-            newOutput.power_reference = availablePower * (0.0)
+            newOutput.power_reference = availablePower * (-1.0)
 
     # Case when battery is full
     elif currentInput.bessSOC == 1:
         handleRegularScenarios(currentInput, previousOutput, newOutput)
-        if newOutput.power_reference > 0.0:
+        if newOutput.power_reference < 0.0:
             newOutput.power_reference = 0.0
 
 def turn_off_loads(newOutput):
