@@ -15,8 +15,6 @@ def worker(msg: DataMessage) -> ResultsMessage:
     """TODO: This function should be implemented by contestants."""
     # Details about DataMessage and ResultsMessage objects can be found in /utils/utils.py
 
-    print("selling price: " + str(msg.selling_price))
-    print("buying price: " + str(msg.buying_price))
 
     # Save received status from framework
     saveReceivedStatus(msg, listOfReceivedStatuses)
