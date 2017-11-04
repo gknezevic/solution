@@ -11,11 +11,27 @@ import sys
 listOfReceivedStatuses = []
 listOfSentStatuses = []
 
-powerCost = []
+minBuyingCosts = []
+maxBuyingCosts = []
+sellingCosts = []
 
 def worker(msg: DataMessage) -> ResultsMessage:
     """TODO: This function should be implemented by contestants."""
     # Details about DataMessage and ResultsMessage objects can be found in /utils/utils.py
+
+    if len(minBuyingCosts) == 0:
+        minBuyingCosts.append(msg.buying_price)
+        maxBuyingCosts.append(msg.buying_price)
+        sellingCosts.append(msg.selling_price)
+    else:
+        if minBuyingCosts[0] > msg.buying_price:
+            minBuyingCosts[0] = msg.buying_price
+
+        if maxBuyingCosts[0] < msg.buying_price:
+            maxBuyingCosts[0] = msg.buying_price
+
+        if sellingCosts[0] < msg.selling_price:
+            sellingCosts[0] = msg.selling_price
 
     # Save received status from framework
     saveReceivedStatus(msg, listOfReceivedStatuses)
@@ -27,9 +43,9 @@ def worker(msg: DataMessage) -> ResultsMessage:
     defaultOutputStatus = ResultsMessage(msg, True, True, True, 0.0, PVMode.ON) if len(listOfSentStatuses) == 0 else listOfSentStatuses[0]
     # Prevent battery overload
     if msg.bessOverload :
-        preventBessOverload(listOfReceivedStatuses[0], defaultOutputStatus, newOutput)
+        preventBessOverload(listOfReceivedStatuses[0], defaultOutputStatus, newOutput, minBuyingCosts[0], maxBuyingCosts[0])
     else:
-        handleRegularScenarios(listOfReceivedStatuses[0], defaultOutputStatus, newOutput)
+        handleRegularScenarios(listOfReceivedStatuses[0], defaultOutputStatus, newOutput, minBuyingCosts[0], maxBuyingCosts[0])
 
     shutdownLoadIfPowerIsExpensive(listOfReceivedStatuses[0], newOutput)
 
