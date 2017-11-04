@@ -22,8 +22,8 @@ def handleRegularScenarios(currentInput:DataMessage, previousOutput:ResultsMessa
         if currentInput.bessSOC * 10.0 <= MINIMAL_BATTERY_POWER_FOR_LOAD_1:
             newOutput.power_reference = currentInput.bessSOC * 10.0 - 10.0
         else:
-            if currentInput.bessSOC >= 0.95:
-                newOutput.power_reference = 6.0 - currentInput.solar_production
+            if currentInput.bessSOC > 0.95:
+                newOutput.power_reference = 0.0
             else:
                 if (currentInput.solar_production - currentInput.current_load) > 0:
                     newOutput.power_reference = (currentInput.current_load - currentInput.solar_production) * 1.0
