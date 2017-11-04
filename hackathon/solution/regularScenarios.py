@@ -25,7 +25,9 @@ def handleRegularScenarios(currentInput:DataMessage, previousOutput:ResultsMessa
             if currentInput.bessSOC > 0.95:
                 newOutput.power_reference = 0.0
             else:
-                if currentInput.selling_price >= 1 and currentInput.solar_production > 0:
+                if currentInput.selling_price > currentInput.buying_price:
+                    newOutput.power_reference = 6.0
+                elif currentInput.selling_price >= 1 and currentInput.solar_production > 0:
                     newOutput.power_reference = currentInput.solar_production
                 elif (currentInput.solar_production - currentInput.current_load) > 0:
                     newOutput.power_reference = (currentInput.current_load - currentInput.solar_production) * 1.0
