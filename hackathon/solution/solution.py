@@ -1,5 +1,6 @@
 """This module is main module for contestant's solution."""
 from hackathon.solution.bess import preventBessOverload
+from hackathon.solution.regularScenarios import handleRegularScenarios
 from hackathon.solution.statuses import saveReceivedStatus, saveSentStatus
 from hackathon.utils.control import Control
 from hackathon.utils.utils import ResultsMessage, DataMessage, PVMode, \
@@ -24,9 +25,12 @@ def worker(msg: DataMessage) -> ResultsMessage:
     batteryUsing = 0.0 if len(listOfSentStatuses) == 0 else listOfSentStatuses[0].power_reference
     newOutput = ResultsMessage(msg, True, True, True, batteryUsing, PVMode.ON)
 
+    defaultOutputStatus = ResultsMessage(msg, True, True, True, 0.0, PVMode.ON) if len(listOfSentStatuses) == 0 else listOfSentStatuses[0]
     # Prevent battery overload
     if msg.bessOverload :
-        preventBessOverload(listOfReceivedStatuses[0], listOfSentStatuses[0], newOutput)
+        preventBessOverload(listOfReceivedStatuses[0], defaultOutputStatus, newOutput)
+    else:
+        handleRegularScenarios(listOfReceivedStatuses[0], defaultOutputStatus, newOutput)
 
     saveSentStatus(newOutput, listOfSentStatuses)
 
