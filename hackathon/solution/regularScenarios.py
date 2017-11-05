@@ -37,27 +37,36 @@ def handleRegularScenarios(currentInput:DataMessage, previousOutput:ResultsMessa
                         newOutput.load_three = True
                         if extraEnergy >= currentInput.current_load * 0.8:
                            newOutput.power_reference = 0.0
-                        else:
+                        elif currentInput.buying_price == maxBuyingPrice:
                             newOutput.power_reference = currentInput.current_load * 0.8 - extraEnergy
+                        else:
+                            newOutput.load_two = False
+                            newOutput.load_three = False
 
                 elif newOutput.load_two == False:
                     if extraEnergy + 6 > currentInput.current_load * 0.5:
                         newOutput.load_two = True
                         if extraEnergy >= currentInput.current_load * 0.5:
                            newOutput.power_reference = 0.0
-                        else:
+                        elif currentInput.buying_price == maxBuyingPrice:
                             newOutput.power_reference = currentInput.current_load * 0.5 - extraEnergy
+                        else:
+                            newOutput.load_two = False
 
                 elif newOutput.load_three == False:
                     if extraEnergy + 6 > currentInput.current_load * 0.3:
                         newOutput.load_three = True
                         if extraEnergy >= currentInput.current_load * 0.3:
                            newOutput.power_reference = 0.0
-                        else:
+                        elif currentInput.buying_price == maxBuyingPrice:
                             newOutput.power_reference = currentInput.current_load * 0.3 - extraEnergy
+                        else:
+                            newOutput.load_three = False
 
         else:
-            if currentInput.bessSOC * 10.0 > MINIMAL_BATTERY_POWER_FOR_LOAD_1:
+            if currentInput.buying_price == minBuyingPrice and currentInput.bessSOC * 10.0 < 5.0:
+                newOutput.power_reference = -6.0
+            elif currentInput.bessSOC * 10.0 > MINIMAL_BATTERY_POWER_FOR_LOAD_1:
                 if currentInput.buying_price == maxBuyingPrice:
                     newOutput.power_reference = extraEnergy * (-1.0)
             else:
