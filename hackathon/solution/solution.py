@@ -52,6 +52,11 @@ def worker(msg: DataMessage) -> ResultsMessage:
 
     saveSentStatus(newOutput, listOfSentStatuses)
 
+    print("solar_production")
+    print(str(msg.solar_production))
+    print("mainGridPower")
+    print(str(msg.mainGridPower))
+
     return newOutput;
 
     # Dummy result is returned in every cycle here

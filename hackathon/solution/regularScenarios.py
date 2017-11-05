@@ -64,7 +64,7 @@ def handleRegularScenarios(currentInput:DataMessage, previousOutput:ResultsMessa
                             newOutput.load_three = False
 
         else:
-            if currentInput.buying_price == minBuyingPrice and currentInput.bessSOC * 10.0 < 5.0:
+            if currentInput.buying_price == minBuyingPrice and currentInput.bessSOC * 10.0 < 9.9:
                 newOutput.power_reference = -6.0
             elif currentInput.bessSOC * 10.0 > MINIMAL_BATTERY_POWER_FOR_LOAD_1:
                 if currentInput.buying_price == maxBuyingPrice:
