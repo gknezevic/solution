@@ -1,5 +1,5 @@
 from hackathon.solution.constants import BATTERY_MAX_OUTPUT_POWER, MINIMAL_BATTERY_POWER_FOR_LOAD_1, \
-    MINIMAL_BATTERY_POWER_FOR_LOAD_1_AND_LOAD_2, BATTERY_SELLING_OUTPUT
+    MINIMAL_BATTERY_POWER_FOR_LOAD_1_AND_LOAD_2, BATTERY_SELLING_OUTPUT, MAX_BUYING_PRICE
 from hackathon.utils.utils import DataMessage, ResultsMessage
 
 
@@ -23,15 +23,11 @@ def handleRegularScenarios(currentInput:DataMessage, previousOutput:ResultsMessa
                                  currentInput.current_load)
 
         if extraEnergy > 0:
-            if currentInput.bessSOC * 10.0 <= MINIMAL_BATTERY_POWER_FOR_LOAD_1:
+            if currentInput.bessSOC * 10.0 <= 9.5:
                 # Charge battery
                 newOutput.power_reference = extraEnergy * (-1.0)
             elif currentInput.selling_price > 0:
                 newOutput.power_reference = 0.0
-                if currentInput.selling_price >= minBuyingPrice and currentInput.bessSOC * 10.0 > MINIMAL_BATTERY_POWER_FOR_LOAD_1:
-                    newOutput.power_reference = BATTERY_SELLING_OUTPUT
-            elif currentInput.bessSOC * 10.0 < 9.8:
-                newOutput.power_reference = extraEnergy * (-1.0)
             else:
                 newOutput.power_reference = 0.0
 
@@ -61,18 +57,11 @@ def handleRegularScenarios(currentInput:DataMessage, previousOutput:ResultsMessa
                             newOutput.power_reference = currentInput.current_load * 0.3 - extraEnergy
 
         else:
-            if currentInput.bessSOC * 10.0 > MINIMAL_BATTERY_POWER_FOR_LOAD_1 * 1.1:
-                newOutput.power_reference = 0.0
-                if currentInput.selling_price >= minBuyingPrice:
-                    newOutput.power_reference = BATTERY_SELLING_OUTPUT
-            elif currentInput.bessSOC * 10.0 <= MINIMAL_BATTERY_POWER_FOR_LOAD_1:
-                if currentInput.buying_price < maxBuyingPrice:
-                    newOutput.power_reference = -6.0
+            if currentInput.bessSOC * 10.0 > MINIMAL_BATTERY_POWER_FOR_LOAD_1:
+                if currentInput.buying_price == maxBuyingPrice:
+                    newOutput.power_reference = extraEnergy * (-1.0)
             else:
-                if currentInput.selling_price > minBuyingPrice and currentInput.bessSOC * 10.0 >= MINIMAL_BATTERY_POWER_FOR_LOAD_1 * 1.1:
-                    newOutput.power_reference = BATTERY_SELLING_OUTPUT
-                else:
-                    newOutput.power_reference = 0.0
+                newOutput.power_reference = 0.0
 
 
 def shutdownLoadIfPowerIsExpensive(currentInput:DataMessage, newOutput: ResultsMessage):
