@@ -1,5 +1,6 @@
 """This module is main module for contestant's solution."""
 from hackathon.solution.bess import preventBessOverload
+from hackathon.solution.constants import PERIOD_WITHOUT_POWER_DOWN, MINIMAL_BATTERY_POWER_FOR_LOAD_1
 from hackathon.solution.regularScenarios import handleRegularScenarios, shutdownLoadIfPowerIsExpensive
 from hackathon.solution.statuses import saveReceivedStatus, saveSentStatus
 from hackathon.utils.control import Control
@@ -15,9 +16,22 @@ minBuyingCosts = []
 maxBuyingCosts = []
 sellingCosts = []
 
+lastPowerDown = []
+
 def worker(msg: DataMessage) -> ResultsMessage:
     """TODO: This function should be implemented by contestants."""
     # Details about DataMessage and ResultsMessage objects can be found in /utils/utils.py
+
+    if len(lastPowerDown) == 0:
+        lastPowerDown.append(-1000)
+
+    MIN_ENERGY_FOR_BATTERY = MINIMAL_BATTERY_POWER_FOR_LOAD_1
+
+    if msg.grid_status == False:
+        lastPowerDown[0] = msg.id
+    else:
+        if msg.id - lastPowerDown[0] < PERIOD_WITHOUT_POWER_DOWN:
+            MIN_ENERGY_FOR_BATTERY = 0.11
 
     if len(minBuyingCosts) == 0:
         minBuyingCosts.append(msg.buying_price)
@@ -44,30 +58,19 @@ def worker(msg: DataMessage) -> ResultsMessage:
     defaultOutputStatus = ResultsMessage(msg, True, True, True, 0.0, PVMode.ON) if len(listOfSentStatuses) == 0 else listOfSentStatuses[0]
     # Prevent battery overload
     if msg.bessOverload :
-        preventBessOverload(listOfReceivedStatuses[0], defaultOutputStatus, newOutput, minBuyingCosts[0], maxBuyingCosts[0])
+        preventBessOverload(listOfReceivedStatuses[0], defaultOutputStatus, newOutput, minBuyingCosts[0], maxBuyingCosts[0],
+                            MIN_ENERGY_FOR_BATTERY)
     else:
-        handleRegularScenarios(listOfReceivedStatuses[0], defaultOutputStatus, newOutput, minBuyingCosts[0], maxBuyingCosts[0])
-
+        handleRegularScenarios(listOfReceivedStatuses[0], defaultOutputStatus, newOutput, minBuyingCosts[0], maxBuyingCosts[0],
+                               MIN_ENERGY_FOR_BATTERY)
 
 
     saveSentStatus(newOutput, listOfSentStatuses)
 
-    print("solar_production")
-    print(str(msg.solar_production))
-    print("mainGridPower")
-    print(str(msg.mainGridPower))
+    if msg.id - lastPowerDown[0] > PERIOD_WITHOUT_POWER_DOWN and msg.bessSOC * 10.0 < MINIMAL_BATTERY_POWER_FOR_LOAD_1:
+        newOutput.power_reference = -6.0
 
     return newOutput;
-
-    # Dummy result is returned in every cycle here
-    #return ResultsMessage(data_msg=msg,
-    #                      load_one=True,
-    #                      load_two=True,
-    #                      load_three=True,
-    #                      power_reference=0.0,
-    #                      pv_mode=PVMode.ON)
-
-
 
 def run(args) -> None:
     prepare_dot_dir()

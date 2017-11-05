@@ -3,7 +3,7 @@ from hackathon.solution.constants import BATTERY_MAX_OUTPUT_POWER, MINIMAL_BATTE
 from hackathon.utils.utils import DataMessage, ResultsMessage
 
 
-def handleRegularScenarios(currentInput:DataMessage, previousOutput:ResultsMessage, newOutput:ResultsMessage, minBuyingPrice, maxBuyingPrice):
+def handleRegularScenarios(currentInput:DataMessage, previousOutput:ResultsMessage, newOutput:ResultsMessage, minBuyingPrice, maxBuyingPrice, MIN_ENERGY_FOR_BATTERY):
     if currentInput.grid_status == False:
         if currentInput.bessSOC * 10 + currentInput.solar_production <= MINIMAL_BATTERY_POWER_FOR_LOAD_1:
             newOutput.load_two = False
@@ -23,7 +23,7 @@ def handleRegularScenarios(currentInput:DataMessage, previousOutput:ResultsMessa
                                  currentInput.current_load)
 
         if extraEnergy > 0:
-            if currentInput.bessSOC * 10.0 <= 9.5:
+            if currentInput.bessSOC * 10.0 <= 9.9:
                 # Charge battery
                 newOutput.power_reference = extraEnergy * (-1.0)
             elif currentInput.selling_price > 0:
@@ -64,9 +64,9 @@ def handleRegularScenarios(currentInput:DataMessage, previousOutput:ResultsMessa
                             newOutput.load_three = False
 
         else:
-            if currentInput.buying_price == minBuyingPrice and currentInput.bessSOC * 10.0 < 9.9:
+            if currentInput.buying_price == minBuyingPrice and currentInput.bessSOC * 10.0 < 9.88:
                 newOutput.power_reference = -6.0
-            elif currentInput.bessSOC * 10.0 > MINIMAL_BATTERY_POWER_FOR_LOAD_1:
+            elif currentInput.bessSOC * 10.0 > MIN_ENERGY_FOR_BATTERY:
                 if currentInput.buying_price == maxBuyingPrice:
                     newOutput.power_reference = extraEnergy * (-1.0)
             else:

@@ -2,15 +2,11 @@ from hackathon.solution.constants import BATTERY_MAX_OUTPUT_POWER
 from hackathon.solution.regularScenarios import handleRegularScenarios
 from hackathon.utils.utils import ResultsMessage, DataMessage
 
-def preventBessOverload(currentInput:DataMessage, previousOutput:ResultsMessage, newOutput:ResultsMessage, minBuyingPrice, maxBuyingPrice) :
+def preventBessOverload(currentInput:DataMessage, previousOutput:ResultsMessage, newOutput:ResultsMessage, minBuyingPrice, maxBuyingPrice, MIN_ENERGY_FOR_BATTERY) :
 
     Pbess = currentInput.current_load - currentInput.solar_production
 
-    #print("Overload occured: povlacenje iz baterije" + str(Pbess))
-    #print("Status (SOC) baterije: " + str(currentInput.bessSOC))
-
     if Pbess > BATTERY_MAX_OUTPUT_POWER:
-        print("Overload occured: povlacenje iz baterije" + str(Pbess))
         if previousOutput.load_three == True:
             newOutput.load_three = False
         if currentInput.current_load * 0.7 > BATTERY_MAX_OUTPUT_POWER:
@@ -46,7 +42,8 @@ def preventBessOverload(currentInput:DataMessage, previousOutput:ResultsMessage,
 
     # Case when battery is full
     elif currentInput.bessSOC == 1:
-        handleRegularScenarios(currentInput, previousOutput, newOutput, minBuyingPrice, maxBuyingPrice)
+        handleRegularScenarios(currentInput, previousOutput, newOutput, minBuyingPrice, maxBuyingPrice,
+                               MIN_ENERGY_FOR_BATTERY)
         if newOutput.power_reference < 0.0:
             newOutput.power_reference = 0.0
 
