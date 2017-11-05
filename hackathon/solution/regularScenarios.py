@@ -1,5 +1,5 @@
 from hackathon.solution.constants import BATTERY_MAX_OUTPUT_POWER, MINIMAL_BATTERY_POWER_FOR_LOAD_1, \
-    MINIMAL_BATTERY_POWER_FOR_LOAD_1_AND_LOAD_2
+    MINIMAL_BATTERY_POWER_FOR_LOAD_1_AND_LOAD_2, BATTERY_SELLING_OUTPUT
 from hackathon.utils.utils import DataMessage, ResultsMessage
 
 
@@ -28,30 +28,49 @@ def handleRegularScenarios(currentInput:DataMessage, previousOutput:ResultsMessa
                 newOutput.power_reference = extraEnergy * (-1.0)
             elif currentInput.selling_price > 0:
                 newOutput.power_reference = 0.0
+                if currentInput.selling_price >= minBuyingPrice and currentInput.bessSOC * 10.0 > MINIMAL_BATTERY_POWER_FOR_LOAD_1:
+                    newOutput.power_reference = BATTERY_SELLING_OUTPUT
             elif currentInput.bessSOC * 10.0 < 9.8:
                 newOutput.power_reference = extraEnergy * (-1.0)
             else:
                 newOutput.power_reference = 0.0
-                if extraEnergy >= currentInput.current_load * 0.8:
-                    newOutput.load_two = True
-                    newOutput.load_three = True
-                elif extraEnergy >= currentInput.current_load * 0.5:
-                    newOutput.load_two = True
-                elif extraEnergy >= currentInput.current_load * 0.3:
-                    newOutput.load_three = True
+
+                if newOutput.load_two == False and newOutput.load_three == False:
+                    if extraEnergy + 6 > currentInput.current_load * 0.8:
+                        newOutput.load_two = True
+                        newOutput.load_three = True
+                        if extraEnergy >= currentInput.current_load * 0.8:
+                           newOutput.power_reference = 0.0
+                        else:
+                            newOutput.power_reference = currentInput.current_load * 0.8 - extraEnergy
+
+                elif newOutput.load_two == False:
+                    if extraEnergy + 6 > currentInput.current_load * 0.5:
+                        newOutput.load_two = True
+                        if extraEnergy >= currentInput.current_load * 0.5:
+                           newOutput.power_reference = 0.0
+                        else:
+                            newOutput.power_reference = currentInput.current_load * 0.5 - extraEnergy
+
+                elif newOutput.load_three == False:
+                    if extraEnergy + 6 > currentInput.current_load * 0.3:
+                        newOutput.load_three = True
+                        if extraEnergy >= currentInput.current_load * 0.3:
+                           newOutput.power_reference = 0.0
+                        else:
+                            newOutput.power_reference = currentInput.current_load * 0.3 - extraEnergy
+
         else:
-            if currentInput.bessSOC * 10.0 > 5.0:
+            if currentInput.bessSOC * 10.0 > MINIMAL_BATTERY_POWER_FOR_LOAD_1:
                 newOutput.power_reference = 0.0
-                if currentInput.selling_price >= minBuyingPrice:
-                    newOutput.power_reference = 6.0
-            #elif currentInput.bessSOC * 10.0 <= 0.5:
-            #    newOutput.power_reference = -6.0
+                if currentInput.selling_price > minBuyingPrice:
+                    newOutput.power_reference = BATTERY_SELLING_OUTPUT
             elif currentInput.bessSOC * 10.0 <= MINIMAL_BATTERY_POWER_FOR_LOAD_1:
                 if currentInput.buying_price < maxBuyingPrice:
-                    newOutput.power_reference = -6.0
+                    newOutput.power_reference = BATTERY_SELLING_OUTPUT * (-1.0)
             else:
                 if currentInput.selling_price > minBuyingPrice and currentInput.bessSOC * 10.0 >= MINIMAL_BATTERY_POWER_FOR_LOAD_1:
-                    newOutput.power_reference = 6.0
+                    newOutput.power_reference = BATTERY_SELLING_OUTPUT
                 else:
                     newOutput.power_reference = 0.0
 
