@@ -37,7 +37,7 @@ def worker(msg: DataMessage) -> ResultsMessage:
     saveReceivedStatus(msg, listOfReceivedStatuses)
 
     # set default output message witch should be changed
-    batteryUsing = 0.0 if len(listOfSentStatuses) == 0 else listOfSentStatuses[0].power_reference
+    batteryUsing = 0.0
     newOutput = ResultsMessage(msg, True, True, True, batteryUsing, PVMode.ON)
     shutdownLoadIfPowerIsExpensive(listOfReceivedStatuses[0], newOutput)
 
