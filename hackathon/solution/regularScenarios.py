@@ -19,19 +19,38 @@ def handleRegularScenarios(currentInput:DataMessage, previousOutput:ResultsMessa
             newOutput.load_one = False
 
     else:
-        if currentInput.bessSOC * 10.0 <= MINIMAL_BATTERY_POWER_FOR_LOAD_1:
-            newOutput.power_reference = currentInput.bessSOC * 10.0 - 10.0
-        else:
-            if currentInput.bessSOC > 0.95:
+        extraEnergy = currentInput.solar_production - predictFutureConsumption(newOutput.load_two, newOutput.load_three,
+                                 currentInput.current_load)
+
+        if extraEnergy > 0:
+            if currentInput.bessSOC * 10.0 <= MINIMAL_BATTERY_POWER_FOR_LOAD_1:
+                # Charge battery
+                newOutput.power_reference = extraEnergy * (-1.0)
+            elif currentInput.selling_price > 0:
                 newOutput.power_reference = 0.0
+            elif currentInput.bessSOC < 9.8:
+                newOutput.power_reference = extraEnergy * (-1.0)
             else:
-                if currentInput.selling_price > minBuyingPrice:
+                newOutput.power_reference = 0.0
+                if extraEnergy >= currentInput.current_load * 0.8:
+                    newOutput.load_two = True
+                    newOutput.load_three = True
+                elif extraEnergy >= currentInput.current_load * 0.5:
+                    newOutput.load_two = True
+                elif extraEnergy >= currentInput.current_load * 0.3:
+                    newOutput.load_three = True
+        else:
+            if currentInput.bessSOC > 0.5:
+                newOutput.power_reference = 0.0
+                if currentInput.selling_price >= minBuyingPrice:
                     newOutput.power_reference = 6.0
-                elif currentInput.selling_price >= 1 and currentInput.solar_production > 0:
-                    newOutput.power_reference = currentInput.solar_production
-                elif (currentInput.solar_production - currentInput.current_load) > 0:
-                    newOutput.power_reference = (currentInput.current_load - currentInput.solar_production) * 1.0
-                elif currentInput.buying_price < maxBuyingPrice:
+            elif currentInput.bessSOC <= MINIMAL_BATTERY_POWER_FOR_LOAD_1:
+                if currentInput.buying_price < maxBuyingPrice:
+                    newOutput.power_reference = -6.0
+            elif currentInput.bessSOC <= 0.05:
+                newOutput.power_reference = -6.0
+            else:
+                if currentInput.selling_price >= minBuyingPrice:
                     newOutput.power_reference = 6.0
                 else:
                     newOutput.power_reference = 0.0
@@ -42,3 +61,8 @@ def shutdownLoadIfPowerIsExpensive(currentInput:DataMessage, newOutput: ResultsM
         newOutput.load_three = False
     if currentInput.buying_price * currentInput.current_load * 0.5/60 > 0.4:
         newOutput.load_two = False
+
+def predictFutureConsumption(load2:bool, load3:bool, teorethicalLoad:float):
+    intLoad2 = 1 if load2 else 0
+    intLoad3 = 1 if load3 else 0
+    return teorethicalLoad*0.2 + teorethicalLoad*0.5*intLoad2 + teorethicalLoad*0.3*intLoad3

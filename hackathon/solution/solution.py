@@ -39,6 +39,7 @@ def worker(msg: DataMessage) -> ResultsMessage:
     # set default output message witch should be changed
     batteryUsing = 0.0 if len(listOfSentStatuses) == 0 else listOfSentStatuses[0].power_reference
     newOutput = ResultsMessage(msg, True, True, True, batteryUsing, PVMode.ON)
+    shutdownLoadIfPowerIsExpensive(listOfReceivedStatuses[0], newOutput)
 
     defaultOutputStatus = ResultsMessage(msg, True, True, True, 0.0, PVMode.ON) if len(listOfSentStatuses) == 0 else listOfSentStatuses[0]
     # Prevent battery overload
@@ -47,7 +48,7 @@ def worker(msg: DataMessage) -> ResultsMessage:
     else:
         handleRegularScenarios(listOfReceivedStatuses[0], defaultOutputStatus, newOutput, minBuyingCosts[0], maxBuyingCosts[0])
 
-    shutdownLoadIfPowerIsExpensive(listOfReceivedStatuses[0], newOutput)
+
 
     saveSentStatus(newOutput, listOfSentStatuses)
 
